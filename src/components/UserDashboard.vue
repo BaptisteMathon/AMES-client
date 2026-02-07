@@ -5,7 +5,7 @@
       <div class="header-left">
         <router-link to="/" class="logo-link">
           <div class="header-logo-container">
-            <img src="../assets/AMES-Logo.png" alt="Logo" class="app-logo" />
+            <img src="/AMES-Logo.png" alt="Logo" class="app-logo" />
           </div>
           <span class="brand-name">Mon Espace</span>
         </router-link>

@@ -3,7 +3,7 @@
       <div class="header-left">
         <div class="header-logo-container" >
             <router-link to="/" class="nav-link">
-                <img src="../assets/AMES-Logo.png" alt="Logo" class="app-logo" />
+                <img src="/AMES-Logo.png" alt="Logo" class="app-logo" />
             </router-link>
         </div>
         <span class="brand-name">Mon Parcours</span>

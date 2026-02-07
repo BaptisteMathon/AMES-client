@@ -3,7 +3,7 @@
     <div class="auth-card">
       
       <div class="logo-container">
-        <img src="../assets/AMES-Logo.png" alt="Logo AMES" class="auth-logo" />
+        <img src="/AMES-Logo.png" alt="Logo AMES" class="auth-logo" />
       </div>
 
       <div class="card-header">
