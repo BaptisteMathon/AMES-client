@@ -17,7 +17,7 @@
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useTaskStore } from '../stores/taskStore';
-import TaskSidebar from './TaskSidebar.vue';
+import TaskSidebar from './TaskSideBar.vue';
 import GanttChart from './GanttChart.vue';
 import axios from 'axios'; // Pour choper le nom du projet
 
