@@ -171,8 +171,8 @@ const getBarStyle = (task) => {
 .gantt-header-spacer {
   height: 50px;
   line-height: 50px;
-  background: #2c3e50;
-  border-bottom: 1px solid #ddd;
+  background: #2e7d32;
+  /* border-bottom: 1px solid #ddd; */
   color: white;
   padding-left: 20px;
   font-weight: bold;

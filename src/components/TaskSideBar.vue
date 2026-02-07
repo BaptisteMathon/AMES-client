@@ -1,7 +1,7 @@
 <template>
   <div class="sidebar">
     <div class="header">
-      <h3>Liste des Tâches</h3>
+      <h3>Liste des Tâches | {{ taskStore.currentProject?.name || 'Chargement...' }} </h3>
       <button @click="createNewTask" class="add-btn">+ Ajouter</button>
     </div>
 
@@ -295,7 +295,7 @@ const createChildTask = (parentTask) => {
   height: 50px;       /* Hauteur Force brute */
   line-height: 50px;  /* Centre le texte verticalement */
   padding: 0 15px;    /* Zéro padding vertical ! */
-  background: #2c3e50;
+  background: #2e7d32;
   color: white;
   display: flex;
   justify-content: space-between;

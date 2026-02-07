@@ -1,6 +1,16 @@
 <template>
+
+  <Header />
+
   <div class="dashboard">
-    <h1>Mes Projets</h1>
+    <div class="dashboard-header">
+      <h1>Mes Projets</h1>
+      
+      <div class="user-info" v-if="authStore.user">
+        <span>Bonjour, <strong>{{ authStore.fullName }}</strong></span>
+        <span class="role-badge">{{ authStore.user.role }}</span>
+      </div>
+    </div>
     
     <div class="create-box">
       <input 
@@ -39,10 +49,13 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
+import Header from './Header.vue';
+import { useAuthStore } from '../stores/authStore';
 
 const projects = ref([]);
 const newProjectName = ref('');
 const router = useRouter();
+const authStore = useAuthStore();
 
 // URL de base (adapter si besoin)
 const API_URL = 'http://localhost:5001/api/projects';
@@ -101,8 +114,8 @@ onMounted(fetchProjects);
 
 .create-box { margin-bottom: 30px; display: flex; gap: 10px; }
 .create-box input { padding: 10px; font-size: 16px; width: 300px; border: 1px solid #ddd; border-radius: 4px; }
-.create-box button { padding: 10px 20px; background: #2c3e50; color: white; border: none; cursor: pointer; border-radius: 4px; }
-.create-box button:hover { background: #34495e; }
+.create-box button { padding: 10px 20px; background: #2e7d32; color: white; border: none; cursor: pointer; border-radius: 4px; }
+.create-box button:hover { background: #1b5e20; }
 
 .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
 
@@ -147,5 +160,32 @@ onMounted(fetchProjects);
 /* On affiche le bouton quand on survole la carte */
 .card:hover .delete-btn {
   opacity: 1;
+}
+
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  background: white;
+  padding: 10px 20px;
+  border-radius: 30px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  font-size: 0.9rem;
+}
+.role-badge {
+  background: #e8f5e9;
+  color: #2e7d32;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: bold;
 }
 </style>

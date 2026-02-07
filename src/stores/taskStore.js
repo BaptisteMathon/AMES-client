@@ -9,7 +9,8 @@ export const useTaskStore = defineStore('taskStore', {
         tasks: [],
         loading: false,
         collapsedIds: [],
-        currentProjectId: null
+        currentProjectId: null,
+        currentProject: null
     }),
 
     getters: {
@@ -62,10 +63,16 @@ export const useTaskStore = defineStore('taskStore', {
 
             this.loading = true;
             try {
-                // CORRECTION URL : On utilise /projects/:id/tasks
-                // Cela correspond à la route définie dans projectRoutes.js
-                const res = await axios.get(`${API_BASE_URL}/projects/${this.currentProjectId}/tasks`);
-                this.tasks = res.data;
+                // 1. On lance les deux requêtes en parallèle pour aller plus vite
+                const [tasksRes, projectRes] = await Promise.all([
+                    axios.get(`${API_BASE_URL}/projects/${this.currentProjectId}/tasks`),
+                    axios.get(`${API_BASE_URL}/projects/${this.currentProjectId}`) // <--- NOUVEAU APPEL
+                ]);
+
+                // 2. On stocke les résultats
+                this.tasks = tasksRes.data;
+                this.currentProject = projectRes.data; // <--- On a maintenant le nom !
+
             } catch (err) {
                 console.error("Erreur fetch", err);
             } finally {

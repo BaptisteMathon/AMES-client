@@ -1,5 +1,6 @@
 <template>
   <div class="app-container">
+
     <div class="back-nav">
       <router-link to="/projects">← Retour aux projets</router-link>
       <span class="project-title">{{ currentProjectName }}</span>
@@ -39,9 +40,9 @@ onMounted(async () => {
 
 <style scoped>
 .app-container { display: flex; flex-direction: column; height: 100vh; }
-.back-nav { height: 40px; background: #2c3e50; color: white; display: flex; align-items: center; padding: 0 20px; gap: 20px; }
-.back-nav a { color: #ccc; text-decoration: none; font-size: 14px; }
-.back-nav a:hover { color: white; }
+.back-nav { height: 40px; background: #2e7d32; color: white; display: flex; align-items: center; padding: 0 20px; gap: 20px; }
+.back-nav a { color: #fff; text-decoration: none; font-size: 14px; }
+.back-nav a:hover { color: white; text-decoration: underline; }
 .project-title { font-weight: bold; }
 .workspace { display: flex; flex: 1; overflow: hidden; }
 </style>
