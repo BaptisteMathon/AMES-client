@@ -112,7 +112,7 @@ const experiences = ref([
   {
     id: 1,
     name: "AMES",
-    logo: "src/assets/AMES-Logo.png", 
+    logo: "/assets/AMES-Logo.png", 
     totalDuration: "février 2024 - aujourd'hui",
     isOpen: true,
     roles: [
@@ -144,7 +144,7 @@ const experiences = ref([
   {
     id: 2,
     name: "Klee Performance",
-    logo: "src/assets/Klee.png", 
+    logo: "/assets/Klee.png", 
     totalDuration: "sept. 2016 - mars 2024",
     isOpen: false,
     roles: [
@@ -204,7 +204,7 @@ const experiences = ref([
   {
     id: 3,
     name: "Auchan",
-    logo: "src/assets/Auchan.png",
+    logo: "/assets/Auchan.png",
     totalDuration: "fév. 2004 - août 2016",
     isOpen: false,
     roles: [
@@ -217,7 +217,7 @@ const experiences = ref([
   {
     id: 4,
     name: "IBM",
-    logo: "src/assets/IBM.png",
+    logo: "/assets/IBM.png",
     totalDuration: "1998 - 2001",
     isOpen: false,
     roles: [
