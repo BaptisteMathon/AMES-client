@@ -58,7 +58,7 @@ const router = useRouter();
 const authStore = useAuthStore();
 
 // URL de base (adapter si besoin)
-const API_URL = 'http://localhost:5001/api/projects';
+const API_URL = 'https://ames-server.vercel.app//api/projects';
 
 const fetchProjects = async () => {
   try {
