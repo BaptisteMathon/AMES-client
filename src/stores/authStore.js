@@ -2,8 +2,7 @@ import { defineStore } from 'pinia';
 import axios from 'axios';
 import router from '../router';
 
-// const API_URL = 'https://ames-server.vercel.app/api/auth';
-const API_URL = 'http://localhost:5001/api/auth';
+const API_URL = process.env.API_URL;
 
 export const useAuthStore = defineStore('authStore', {
     state: () => ({
@@ -75,7 +74,6 @@ export const useAuthStore = defineStore('authStore', {
                 console.error(err);
             }
         },
-        // 👆👆👆👆👆👆
 
         // --- UTILITAIRE SESSION ---
         setSession(data) {
