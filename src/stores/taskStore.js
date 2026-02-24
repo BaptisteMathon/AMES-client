@@ -4,8 +4,7 @@ import dayjs from 'dayjs';
 import { addBusinessDays, getBusinessDaysDiff } from '../utils/dateUtils';
 
 // CORRECTION ICI : On pointe vers la racine de l'API, pas vers /tasks
-// const API_BASE_URL = 'https://ames-server.vercel.app/api';
-const API_BASE_URL = 'http://localhost:5001/api';
+const API_BASE_URL = 'https://ames-server.vercel.app/api';
 
 export const useTaskStore = defineStore('taskStore', {
     state: () => ({
