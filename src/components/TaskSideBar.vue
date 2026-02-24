@@ -10,6 +10,7 @@
       <div class="col-date">Début</div>
       <div class="col-dur">Jours</div>
       <div class="col-prog">Progression</div>
+      <div class="col-assign">Assignés</div>
       <div class="col-action"></div>
     </div>
 
@@ -68,6 +69,50 @@
               @change="updateTask(task)"
             >
 
+            <div class="col-assign relative-container">
+  
+              <div 
+                class="custom-select-btn input-clean" 
+                @click.stop="toggleDropdown(task._id)"
+              >
+                {{ getAssigneesText(task.assignedTo) }}
+              </div>
+
+              <div 
+                class="custom-dropdown" 
+                v-if="openDropdownId === task._id" 
+                @click.stop
+              >
+                <div 
+                  v-for="user in assignableUsers" 
+                  :key="user._id" 
+                  class="dropdown-item-container"
+                >
+                  <label class="dropdown-item">
+                    <input 
+                      type="checkbox" 
+                      :checked="isAssigned(task, user._id)" 
+                      @change="toggleAssign(task, user._id)"
+                    />
+                    {{ user.firstName }} {{ user.lastName.charAt(0) }}.
+                  </label>
+
+                  <div v-if="isAssigned(task, user._id)" class="pct-container">
+                    <input 
+                      type="number" 
+                      min="0" 
+                      max="100" 
+                      class="pct-input" 
+                      :value="task.assignedTo.find(a => a.user === user._id)?.percentage" 
+                      @change="updatePercentage(task, user._id, $event.target.value)" 
+                    /> %
+                  </div>
+
+                </div>
+              </div>
+              
+            </div>
+
             <div class="col-action">
                 <button 
                   class="add-child-btn" 
@@ -88,15 +133,102 @@
 </template>
 
 <script setup>
-import { onMounted } from 'vue';
+import { ref, onMounted, onUnmounted, computed } from 'vue';
 import { useTaskStore } from '../stores/taskStore'; // On importe le store
+import { useAuthStore } from '../stores/authStore';
 import dayjs from 'dayjs';
 
 const taskStore = useTaskStore();
+const authStore = useAuthStore();
 
-// Au chargement du composant, on appelle l'API via le store
+const openDropdownId = ref(null); // Mémorise quel menu est ouvert
+
+const toggleDropdown = (id) => {
+  // Ouvre ou ferme le menu de la tâche cliquée
+  openDropdownId.value = openDropdownId.value === id ? null : id;
+};
+
+const closeDropdown = () => {
+  openDropdownId.value = null; // Ferme tout si on clique ailleurs
+};
+
+// Filtre des utilisateurs
+const assignableUsers = computed(() => {
+  return authStore.allUsers.filter(u => u.role === 'admin' || u.role === 'user');
+});
+
+// Génère le texte du bouton ("Non assigné", "Jean D.", ou "2 assignés")
+// const getAssigneesText = (assignedIds) => {
+//   if (!assignedIds || assignedIds.length === 0) return "- Non assigné -";
+//   if (assignedIds.length === 1) {
+//     const user = assignableUsers.value.find(u => u._id === assignedIds[0]);
+//     return user ? `${user.firstName} ${user.lastName.charAt(0)}.` : "1 assigné";
+//   }
+//   return `${assignedIds.length} assignés`;
+// };
+
+// --- GESTION DU MENU DÉROULANT ET POURCENTAGES ---
+
+// 1. Affiche le texte sur le bouton
+const getAssigneesText = (assignedTo) => {
+  if (!assignedTo || assignedTo.length === 0) return "- Non assigné -";
+  
+  if (assignedTo.length === 1) {
+    // Attention : on lit assignedTo[0].user maintenant !
+    const userId = assignedTo[0].user; 
+    const user = assignableUsers.value.find(u => u._id === userId);
+    return user ? `${user.firstName} ${user.lastName.charAt(0)}.` : "1 assigné";
+  }
+  return `${assignedTo.length} assignés`;
+};
+
+// 2. Vérifie si un utilisateur est dans la liste
+const isAssigned = (task, userId) => {
+  if (!task.assignedTo) return false;
+  return task.assignedTo.some(a => a.user === userId);
+};
+
+// 3. Coche/Décoche un utilisateur
+const toggleAssign = (task, userId) => {
+  if (!task.assignedTo) task.assignedTo = [];
+  
+  const index = task.assignedTo.findIndex(a => a.user === userId);
+  
+  if (index !== -1) {
+    // Si déjà assigné, on l'enlève
+    task.assignedTo.splice(index, 1); 
+  } else {
+    // Sinon, on l'ajoute
+    task.assignedTo.push({ user: userId, percentage: 100 });
+  }
+  
+  // ASTUCE UX : Répartition automatique équitable
+  if (task.assignedTo.length > 0) {
+    const equalShare = Math.round(100 / task.assignedTo.length);
+    task.assignedTo.forEach(a => a.percentage = equalShare);
+  }
+
+  updateTask(task);
+};
+
+// 4. Modifie manuellement le pourcentage d'un utilisateur
+const updatePercentage = (task, userId, newPct) => {
+  const assignment = task.assignedTo.find(a => a.user === userId);
+  if (assignment) {
+    // On s'assure que c'est bien un nombre entre 0 et 100
+    assignment.percentage = Math.min(100, Math.max(0, parseInt(newPct) || 0));
+    updateTask(task);
+  }
+};
+
 onMounted(() => {
+  document.addEventListener('click', closeDropdown); // Écoute les clics pour fermer le menu
   taskStore.fetchTasks();
+  authStore.fetchAllUsers();
+});
+
+onUnmounted(() => {
+  document.removeEventListener('click', closeDropdown); // Nettoyage propre
 });
 
 // --- Fonctions Utilitaires ---
@@ -105,9 +237,10 @@ onMounted(() => {
 const createNewTask = () => {
   taskStore.addTask({
     text: "Nouvelle tâche",
-    start_date: new Date(), // Aujourd'hui
+    start_date: new Date(),
     duration: 1,
-    progress: 0
+    progress: 0,
+    assignedTo: [] // <--- NOUVEAU : On prépare le terrain
   });
 };
 
@@ -118,7 +251,8 @@ const updateTask = (task) => {
     text: task.text,
     duration: task.duration,
     progress: task.progress,
-    start_date: task.start_date
+    start_date: task.start_date,
+    assignedTo: task.assignedTo || []
   });
 };
 
@@ -143,12 +277,11 @@ const deleteTask = (id) => {
 const createChildTask = (parentTask) => {
   taskStore.addTask({
     text: "Nouvelle sous-tâche",
-    // Astuce UX : On la fait commencer le même jour que le parent
     start_date: parentTask.start_date, 
     duration: 1,
     progress: 0,
-    // C'EST ICI QUE LA MAGIE OPÈRE :
-    parent: parentTask._id 
+    parent: parentTask._id, 
+    assignedTo: [] 
   });
 };
 </script>
@@ -181,7 +314,7 @@ const createChildTask = (parentTask) => {
      Col 3 (Jours) : 50px (fixe)
      Col 4 (Action) : 30px (fixe)
   */
-  grid-template-columns: 1fr 110px 50px 60px 60px;
+  grid-template-columns: 110px 110px 50px 60px 100px 60px;
   align-items: center; /* Centre verticalement */
   border-bottom: 1px solid #eee;
   padding: 0 10px; /* Marge interne gauche/droite */
@@ -204,7 +337,8 @@ const createChildTask = (parentTask) => {
 .header-row .col-date,
 .header-row .col-dur,
 .header-row .col-action,
-.header-row .col-prog {
+.header-row .col-prog,
+.header-row .col-assign {
   text-align: center;
 }
 
@@ -335,5 +469,118 @@ const createChildTask = (parentTask) => {
 .toggle-placeholder {
   width: 20px;       /* Même largeur que l'icône pour que le texte soit aligné */
   margin-right: 5px;
+}
+
+.assign-select {
+  height: 34px !important;
+  font-size: 11px;
+  overflow-y: auto; /* Permet de scroller s'il y a beaucoup d'utilisateurs */
+  padding: 2px;
+}
+.assign-select option {
+  padding: 2px 4px;
+}
+
+/* --- STYLE DU MENU DÉROULANT ASSIGNÉS --- */
+.relative-container {
+  position: relative; /* Indispensable pour que le menu flotte par rapport à cette case */
+  width: 100%;
+}
+
+.custom-select-btn {
+  cursor: pointer;
+  text-align: center;
+  font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.custom-select-btn:hover {
+  background: white;
+  border: 1px solid #42b983;
+}
+
+.custom-dropdown {
+  position: absolute;
+  top: 35px; /* S'affiche juste en dessous du bouton */
+  left: 50%;
+  transform: translateX(-50%); /* Pour le centrer parfaitement */
+  width: 190px;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+  z-index: 9999; /* Toujours au premier plan */
+  max-height: 200px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 5px 0;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  color: #333;
+  transition: background 0.2s;
+  gap: 8px; /* Espace entre la case et le nom */
+}
+
+.dropdown-item:hover {
+  background-color: #f0fdf4; /* Petit fond vert au survol */
+}
+
+.dropdown-item input[type="checkbox"] {
+  cursor: pointer;
+}
+
+/* --- NOUVEAUX STYLES POUR LE POURCENTAGE --- */
+.dropdown-item-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 10px;
+}
+
+.dropdown-item-container:hover {
+  background-color: #f0fdf4;
+}
+
+/* On réajuste le dropdown-item car son parent gère le hover maintenant */
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  color: #333;
+  margin: 0;
+  padding: 4px 0;
+}
+.dropdown-item:hover { background-color: transparent; } 
+
+.pct-container {
+  font-size: 11px;
+  color: #666;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.pct-input {
+  width: 45px;
+  padding: 2px;
+  font-size: 11px;
+  text-align: right;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+.pct-input:focus {
+  border-color: #42b983;
+  outline: none;
 }
 </style>
